@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>REST API</title>
+		<style type="text/css">
+			body {
+				margin: 0;
+				padding: 5px;
+			}
+			.main-container {
+				width: auto;
+				border: 2px solid blue;
+				padding: 10px;
+				display: all;
+				border-radius: 10px;
+			}
+			.element-container {
+				display: inline-block;
+				width: auto;
+				height: 100%;
+				border-radius: 10px;
+				margin: 5px;
+				padding: 5px;
+				box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+  				transition: 0.3s;
+			}
+			.element-container:hover {
+				box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+			}
+			span {
+				height: 50%;
+				width: 50%;
+				display: inline-block;
+			}
+			input[type=text], input[type=submit], select {
+				width: 50%;
+				height: 50%;
+				display: inline-block;
+				border-radius: 7px;
+				padding: 5px;
+				margin-bottom: 5px;
+				border: 2px solid;
+			}
+			input[type=submit] {
+				width: auto;
+			}
+			input[type=submit]:hover {
+				cursor: pointer;
+			}
+			button {
+				display: inline-block;
+				float: right;
+			}
+		</style>
+		<script type="text/javascript">
+			var heroesAPIURL = "http://127.0.0.1:8000/heroes/";
+			fetch(heroesAPIURL)
+			.then(response => response.json())
+			.then(json => {
+				let data = json;
+				let selectElement = document.getElementById('heroId');
+				for(hero in data) {
+					let heroData = data[hero];
+					hero = heroData.id;
+					let div = document.createElement('div');
+					div.id = "hero" + hero;
+					div.className = "element-container";
+
+					let span1 = document.createElement('span');
+					span1.id = "hero" + hero + "name";
+					span1.innerHTML = heroData.name;
+					let span2 = document.createElement('span');
+					span2.id = "hero" + hero + "alias";
+					span2.innerHTML = heroData.alias;
+
+					let deleteButton = document.createElement('button');
+					deleteButton.setAttribute('onclick','deleteData(' + hero + ')');
+					deleteButton.innerHTML = "-";
+
+					div.appendChild(span1);
+					div.appendChild(span2);
+					div.appendChild(deleteButton);
+
+					let mainDiv = document.getElementById('heroes');
+					mainDiv.appendChild(div);
+
+					let option = document.createElement('option');
+					option.value = hero;
+					option.innerHTML = hero;
+					selectElement.appendChild(option);
+				}
+			})
+			.catch(error => console.log(console));
+
+			function updateData() {
+				let name = document.getElementsByName('name')[0].value;
+				let alias = document.getElementsByName('alias')[0].value;
+				let id = document.getElementById('heroId').value;
+
+				let data = {
+					id: id,
+					name: name,
+					alias : alias,
+				}
+
+				updateDataURL = "http://127.0.0.1:8000/heroes/" + id + "/";
+				fetch(updateDataURL, {
+					method: "PUT",
+					body: JSON.stringify(data),
+					headers: {"Content-type": "application/json; charset=UTF-8"}
+				})
+				.then(response => response.json()) 
+				.then(json => console.log(json))
+				.catch(err => console.log(err));
+			}
+
+			function deleteData(id) {
+
+				let data = {
+					id: id,
+				}
+
+				updateDataURL = "http://127.0.0.1:8000/heroes/" + id + "/";
+				fetch(updateDataURL, {
+					method: "DELETE",
+					body: JSON.stringify(data),
+					headers: {"Content-type": "application/json; charset=UTF-8"}
+				})
+				.then(response => {
+
+					let element = document.getElementById("hero" + id);
+					let mainElement = document.getElementById("heroes");
+					mainElement.removeChild(element);
+				}) 
+				.then(json => console.log(json))
+				.catch(err => console.log(err));
+			}
+
+			function addHero() {
+
+				let name = document.getElementsByName("name")[0].value;
+				let alias = document.getElementsByName("alias")[0].value;
+
+				let data = {
+					name: name,
+					alias : alias,
+				}
+
+				addHeroURL = "http://127.0.0.1:8000/heroes/";
+				fetch(addHeroURL, {
+
+					method: 'POST',
+					body: JSON.stringify(data),
+					headers: {"Content-type": "application/json; charset=UTF-8"}
+				})
+				.then(
+					
+				)
+				.catch();
+			}
+		</script>
+	</head>
+	<body>
+		<h1>Super Heroes</h1>
+		<div id = "heroes" class = "main-container">
+			<div class = "element-container">
+				{% csrf_token %}
+				<select id = "heroId" >
+					
+				</select>
+				<input type = "text" name = "name" placeholder = "Name" required="" />
+				<input type = "text" name = "alias" placeholder = "Alias" required="" />
+				<button onclick = "addHero();">+</button>
+				<button onclick = "updateData();">Edit</button>
+			</div>
+		</div>
+	</body>
+</html>
